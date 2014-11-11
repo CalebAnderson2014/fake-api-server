@@ -3,70 +3,62 @@
 express = require 'express'
 bodyParser = require 'body-parser'
 
-class Server
-  constructor: ->
-    @_resources = []
-    @_server = express()
-    @_server.use bodyParser()
+Server = ->
+  resources = []
 
-    @_server.on "error", (err) ->
-      console.error err
+  server = express()
+  server.use bodyParser()
 
-    @_server.get "/api", (req, res) =>
-      res.send @_resources.map (resource) ->
-        name: resource.name()
-        url: "/api/#{resource.pluralName()}"
+  getResource = (cb) ->
+    return (req, res) ->
+      path = req.params.resource
 
-    @_server.get "/api/:resource", (req, res) =>
-      @find req.params.resource, (resource) ->
-        if resource == null
-          res.send 404
-        else
-          return res.send resource.all()
-
-    @_server.get "/api/:resource/:id", (req, res) =>
-      @find req.params.resource, (resource) ->
-        if data = resource.find req.params.id
-          return res.send data
-        else
+      sendResponse = (resource) ->
+        try
+          res.send cb(req, resource)
+        catch errorMsg
           res.statusCode = 404
-          res.send "No #{resource.name()} with id #{req.params.id}"
+          res.send errorMsg
 
-    @_server.post "/api/:resource", (req, res) =>
-      @find req.params.resource, (resource) ->
-        data = req.body
-        resource.add data
-        res.send 200
+      for resource in resources
+        sendResponse(resource) if resource.pluralName() is path
+      res.send 404
 
-    @_server.put "/api/:resource/:id", (req, res) =>
-      @find req.params.resource, (resource) ->
-        if resource.update req.params.id, req.body
-          res.send 200
-        else
-          res.statusCode = 404
-          res.send "No #{resource.name()} with id #{req.params.id}"
+  server.on "error", (err) ->
+    console.error err
 
-    @_server.delete "/api/:resource/:id", (req, res) =>
-      @find req.params.resource, (resource) ->
-        if resource.remove req.params.id
-          res.send 200
-        else
-          res.statusCode = 404
-          res.send "No #{resource.name()} with id #{req.params.id}"
+  server.get "/api", (req, res) ->
+    res.send resources.map (resource) ->
+      name: resource.name()
+      url: "/api/#{resource.pluralName()}"
 
-  find: (path, cb) ->
-    for resource in @_resources
-      if resource.pluralName() is path
-        return cb resource
-    cb null
+  server.get "/api/:resource", getResource (req, resource) ->
+    resource.all()
 
-  listen: (port=3000) ->
-    @_server.listen port
+  server.get "/api/:resource/:id", getResource (req, resource) ->
+    resource.find(req.params.id) || throw "No #{resource.name()} with id #{req.params.id}"
+
+  server.post "/api/:resource", getResource (req, resource) ->
+    resource.add(req.body)
+
+  server.put "/api/:resource/:id", getResource (req, resource) ->
+    resource.update(req.params.id, req.body) || throw "No #{resource.name()} with id #{req.params.id}"
+
+  server.delete "/api/:resource/:id", getResource (req, resource) ->
+    resource.remove(req.params.id) || throw "No #{resource.name()} with id #{req.params.id}"
+
+  #
+  # Public Interface
+  #
+  listen = (port=3000) ->
+    server.listen port
     console.log "server listening on localhost:#{port}"
     this
 
-  register: (resource) ->
-    @_resources = @_resources.concat [resource]
+  register = (resource) ->
+    resources = resources.concat [resource]
     this
+
+  return { listen, register }
 
 module.exports = Server

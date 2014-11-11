@@ -1,69 +1,72 @@
 # fake api resource
 
-class Resource
-  constructor: (@_name) ->
-    @_records = []
-    @_idAttribute = "id"
-    @_idFactory   = =>
-      1 + Math.max 0,
-        Math.max.apply Math, (d[@_idAttribute] for d in @_records)
+Resource = (name) ->
+  records = []
+  idAttribute = "id"
+  idFactory = ->
+    1 + Math.max 0,
+      Math.max.apply Math, (d[idAttribute] for d in records)
+
+  resource =
+  _name: name
+  _pluralName: null
 
   idAttribute: ->
     if arguments.length is 0
-      @_idAttribute
+      idAttribute
     else
-      @_idAttribute = arguments[0]
-      this
+      idAttribute = arguments[0]
+      resource
 
   idFactory: ->
     if arguments.length is 0
-      @_idFactory
+      idFactory
     else
-      @_idFactory = arguments[0]
-      this
+      idFactory = arguments[0]
+      resource
 
   name: ->
     if arguments.length is 0
-      @_name
+      resource._name
     else
-      @_name = arguments[0]
-      this
+      resource._name = arguments[0]
+      resource
 
   pluralName: ->
     if arguments.length is 0
-      if @_pluralName
-        @_pluralName
+      if resource._pluralName
+        resource._pluralName
       else
-        "#{@_name}s"
+        "#{resource._name}s"
     else
-      @_pluralName = arguments[0]
-      this
+      resource._pluralName = arguments[0]
+      resource
 
   all: ->
-    @_records
+    records
 
   add: (record) ->
-    record[@_idAttribute] = @_idFactory()
-    @_records = @_records.concat [record]
-    this
+    record[idAttribute] = idFactory()
+    records = records.concat [record]
+    resource
 
   find: (id) ->
-    record = @_records.filter (d) =>
-      "#{d[@_idAttribute]}" is "#{id}"
+    record = records.filter (d) ->
+      "#{d[idAttribute]}" is "#{id}"
     if record.length then record[0] else no
 
   update: (id, updates) ->
     record = @find id
     return no unless record
-    for name, value of updates when name isnt @_idAttribute
+    for name, value of updates when name isnt idAttribute
       record[name] = value
     record
 
   remove: (id) ->
     record = @find id
     return no unless record
-    @_records = @_records.filter (d) =>
-      "#{d[@_idAttribute]}" isnt "#{id}"
+    records = records.filter (d) ->
+      "#{d[idAttribute]}" isnt "#{id}"
     yes
 
 module.exports = Resource
