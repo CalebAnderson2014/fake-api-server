@@ -39,7 +39,7 @@ Server = ->
     resource.find(req.params.id) || throw "No #{resource.name()} with id #{req.params.id}"
 
   server.post "/api/:resource", getResource (req, resource) ->
-    resource.add(req.body)
+    resource.create(req.body)
 
   server.put "/api/:resource/:id", getResource (req, resource) ->
     resource.update(req.params.id, req.body) || throw "No #{resource.name()} with id #{req.params.id}"

@@ -46,9 +46,13 @@ Resource = (name) ->
     records
 
   add: (record) ->
+    resource.create(record)
+    resource
+
+  create: (record) ->
     record[idAttribute] = idFactory()
     records = records.concat [record]
-    resource
+    record
 
   find: (id) ->
     record = records.filter (d) ->
