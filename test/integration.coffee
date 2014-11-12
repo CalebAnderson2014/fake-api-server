@@ -1,10 +1,13 @@
 # integration tests for server
-
 chai = require 'chai'
 chai.should()
 
+Q = require 'kew'
+
 fake = require '../lib'
 http = require 'http'
+
+{get, post, put, delete: del} = require './support/http-promise'
 
 _port = 6000
 nextPort = -> _port = _port + 1
@@ -22,25 +25,22 @@ describe "server", ->
       .register tools
       .listen port = nextPort()
 
-    http.get "http://localhost:#{port}/api", (res) ->
+    get("/api", port).then (res) ->
       res.statusCode.should.equal 200
+      all = JSON.parse(res.body)
 
-      buffer = ''
-      res.on 'data', (d) -> buffer += d.toString()
-      res.on 'end', ->
-        all = JSON.parse buffer
+      names = all.map (d) -> d.name
+      names.should.contain "book"
+      names.should.contain "music"
+      names.should.contain "tool"
 
-        names = all.map (d) -> d.name
-        names.should.contain "book"
-        names.should.contain "music"
-        names.should.contain "tool"
+      paths = all.map (d) -> d.url
+      paths.should.contain "/api/books"
+      paths.should.contain "/api/music"
+      paths.should.contain "/api/tools"
 
-        paths = all.map (d) -> d.url
-        paths.should.contain "/api/books"
-        paths.should.contain "/api/music"
-        paths.should.contain "/api/tools"
-
-        done()
+      done()
+    .end()
 
   it "handles GET /api/books", (done) ->
     books = new fake.Resource "book"
@@ -52,28 +52,26 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    http.get "http://localhost:#{port}/api/books", (res) ->
+    get("/api/books", port).then (res) ->
       res.statusCode.should.equal 200
+      all = JSON.parse(res.body)
 
-      buffer = ''
-      res.on 'data', (d) -> buffer += d.toString()
-      res.on 'end', ->
-        all = JSON.parse buffer
+      names = all.map (d) -> d.name
+      names.should.contain "foo"
+      names.should.contain "bar"
+      names.should.contain "baz"
 
-        names = all.map (d) -> d.name
-        names.should.contain "foo"
-        names.should.contain "bar"
-        names.should.contain "baz"
-
-        done()
+      done()
+    .end()
 
   it "handles 404 on /api/idontexist", (done) ->
     port = nextPort()
     server = new fake.Server()
       .listen port
-    http.get "http://localhost:#{port}/api/idontexist", (res) ->
+    get("/api/idontexist", port).then (res) ->
       res.statusCode.should.equal 404
       done()
+    .end()
 
   it "handles GET /api/books/:id", (done) ->
     books = new fake.Resource "book"
@@ -85,18 +83,16 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    http.get "http://localhost:#{port}/api/books/#{bar.id}", (res) ->
+    get("/api/books/#{bar.id}", port).then (res) ->
       res.statusCode.should.equal 200
 
-      buffer = ''
-      res.on 'data', (d) -> buffer += d.toString()
-      res.on 'end', ->
-        record = JSON.parse buffer
+      record = JSON.parse(res.body)
 
-        record.id.should.equal bar.id
-        record.name.should.equal "bar"
+      record.id.should.equal bar.id
+      record.name.should.equal "bar"
 
-        done()
+      done()
+    .end()
 
   it "handles 404 on GET /api/books/:id", (done) ->
     books = new fake.Resource "book"
@@ -108,9 +104,10 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    http.get "http://localhost:#{port}/api/books/8383", (res) ->
+    get("/api/books/8383", port).then (res) ->
       res.statusCode.should.equal 404
       done()
+    .end()
 
   it "handles POST /api/books", (done) ->
     books = new fake.Resource "book"
@@ -119,25 +116,14 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    req = http.request
-      host: "localhost"
-      port: port
-      path: "/api/books"
-      method: "POST"
-      (res) ->
-        res.statusCode.should.equal 200
-        res.on 'data', ->
-        res.on 'end', ->
-          res.statusCode.should.equal 200
+    post('/api/books', port, name: "foobar").then (res) ->
+      res.statusCode.should.equal 200
 
-          all = books.all()
-          all.length.should.equal 1
-          all[0].name.should.equal "foobar"
-          done()
-
-    req.setHeader "Content-Type", "application/json"
-    req.write JSON.stringify name: "foobar"
-    req.end()
+      all = books.all()
+      all.length.should.equal 1
+      all[0].name.should.equal "foobar"
+      done()
+    .end()
 
   it "handles PUT /api/books/:id", (done) ->
     books = new fake.Resource "book"
@@ -147,25 +133,13 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    req = http.request
-      host: "localhost"
-      port: port
-      path: "/api/books/1"
-      method: "PUT"
-      (res) ->
-        res.statusCode.should.equal 200
-        res.on "data", ->
-        res.on "end", ->
-          res.statusCode.should.equal 200
-
-          all = books.all()
-          all.length.should.equal 1
-          all[0].name.should.equal "foobar"
-          done()
-
-    req.setHeader "Content-Type", "application/json"
-    req.write JSON.stringify name: "foobar"
-    req.end()
+    put("/api/books/1", port, name: "foobar").then (res) ->
+      res.statusCode.should.equal 200
+      all = books.all()
+      all.length.should.equal 1
+      all[0].name.should.equal "foobar"
+      done()
+    .end()
 
   it "handles DELETE /api/books/:id", (done) ->
     books = new fake.Resource "book"
@@ -175,27 +149,19 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    req = http.request
-      host: "localhost"
-      port: port
-      path: "/api/books/1"
-      method: "DELETE"
-      (res) ->
-        res.statusCode.should.equal 200
-        res.on "data", ->
-        res.on "end", ->
-          all = books.all()
-          all.length.should.equal 0
-          done()
-
-    req.end()
+    del("/api/books/1", port).then (res) ->
+      res.statusCode.should.equal 200
+      all = books.all()
+      all.length.should.equal 0
+      done()
+    .end()
 
 describe "registered resources", ->
   it "can still be renamed", (done) ->
     books = new fake.Resource "books"
+      .add name: "goodbye"
       .add name: "foo"
-      .add name: "bar"
-      .add name: "baz"
+      .add name: "ohai"
 
     server = new fake.Server()
       .register books
@@ -203,41 +169,31 @@ describe "registered resources", ->
 
     books.name "cat"
 
-    total = 5
-    complete = (res) ->
+    expectOk = (res) ->
       res.statusCode.should.equal 200
-      res.on 'data', ->
-      res.on 'end', ->
-        if (total -= 1) is 0
-          done()
+      res
 
-    http.get "http://localhost:#{port}/api/cats", complete
-    http.get "http://localhost:#{port}/api/cats/1", complete
+    manipulate = [
+      get("/api/cats/1", port)
+      post("/api/cats",  port, name: "kitty")
+      put("/api/cats/2", port, name: "garfield")
+      del("/api/cats/1", port)
+    ].map (p) -> p.then(expectOk)
 
-    req = http.request
-      host: "localhost"
-      port: port
-      path: "/api/cats"
-      method: "POST"
-      complete
-    req.setHeader "Content-Type", "application/json"
-    req.write JSON.stringify name: "foobar"
-    req.end()
+    get("/api/cats", port).then(expectOk).then (res) ->
+      all = JSON.parse(res.body)
+      all.length.should.equal 3
+    .then(-> Q.all manipulate)
+    .then(-> get "/api/cats", port)
+    .then(expectOk)
+    .then (res) ->
+      all = JSON.parse(res.body)
+      all.length.should.equal 3
 
-    req = http.request
-      host: "localhost"
-      port: port
-      path: "/api/cats/2"
-      method: "PUT"
-      complete
-    req.setHeader "Content-Type", "application/json"
-    req.write JSON.stringify name: "foobar"
-    req.end()
+      names = all.map (cat) -> cat.name
+      names.should.contain "kitty"
+      names.should.contain "ohai"
+      names.should.contain "garfield"
 
-    req = http.request
-      host: "localhost"
-      port: port
-      path: "/api/cats/1"
-      method: "DELETE"
-      complete
-    req.end()
+      done()
+    .end()
