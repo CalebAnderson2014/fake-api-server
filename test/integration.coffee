@@ -125,6 +125,27 @@ describe "server", ->
       done()
     .end()
 
+  it "handles POST /api/books with a normal query string", (done) ->
+    books = new fake.Resource "book"
+
+    server = new fake.Server()
+      .register books
+      .listen port = nextPort()
+
+    post('/api/books', port, { name: "foobar" }, { useJSON: false }).then (res) ->
+      res.statusCode.should.equal 200
+      record = JSON.parse(res.body)
+      record.name.should.not.equal undefined
+      record.name.should.equal "foobar"
+
+      all = books.all()
+      all.length.should.equal 1
+      all[0].name.should.equal "foobar"
+      done()
+    .end()
+
+
+
   it "handles PUT /api/books/:id", (done) ->
     books = new fake.Resource "book"
       .add name: "foo"

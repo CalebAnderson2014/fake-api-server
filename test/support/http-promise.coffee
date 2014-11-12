@@ -1,5 +1,6 @@
 http = require 'http'
 Q = require 'kew'
+querystring = require 'querystring'
 
 request = (method, path, port, data="", options={}) ->
   options.useJSON ||= true
@@ -23,6 +24,11 @@ request = (method, path, port, data="", options={}) ->
     data ||= {}
     req.setHeader "Content-Type", "application/json"
     data = JSON.stringify(data)
+  else
+    data ||= {}
+    req.setHeader "Content-Type", "multipart/form-data"
+    data = querystring.strigify(data)
+
   req.write(data)
   req.end()
   return deferred.promise
