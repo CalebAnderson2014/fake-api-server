@@ -3,6 +3,7 @@
 Resource = (name) ->
   records = []
   validator = null
+  funnels = []
   idAttribute = "id"
   idFactory = ->
     1 + Math.max 0,
@@ -34,6 +35,7 @@ Resource = (name) ->
       resource
 
   validateWith: (v) -> validator = v
+  addFunnel: (f) -> funnels.push(f); this
 
   pluralName: ->
     if arguments.length is 0
@@ -53,6 +55,8 @@ Resource = (name) ->
     resource
 
   create: (record) ->
+    record = f(record) for f in funnels
+
     if validator
       result = validator(record)
       return { _errors: result } if result != true
@@ -69,8 +73,11 @@ Resource = (name) ->
   update: (id, updates) ->
     record = @find id
     return no unless record
+
     for name, value of updates when name isnt idAttribute
       record[name] = value
+
+    record = f(record) for f in funnels
     record
 
   remove: (id) ->
