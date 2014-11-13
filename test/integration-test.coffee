@@ -144,6 +144,22 @@ describe "server", ->
       done()
     .end()
 
+  it "handles POST /api/books with an invalid resource", (done) ->
+    books = new fake.Resource "book"
+    # Create a validator that always throws an error
+    books.validateWith -> { theAttr: "is bad" }
+
+    server = new fake.Server()
+      .register books
+      .listen port = nextPort()
+
+    post('/api/books', port, { name: "foobar" }).then (res) ->
+      res.statusCode.should.equal 400
+      errors = JSON.parse(res.body)
+      errors.theAttr.should.equal "is bad"
+      done()
+    .end()
+
 
 
   it "handles PUT /api/books/:id", (done) ->

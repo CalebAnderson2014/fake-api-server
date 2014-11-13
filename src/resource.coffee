@@ -2,6 +2,7 @@
 
 Resource = (name) ->
   records = []
+  validator = null
   idAttribute = "id"
   idFactory = ->
     1 + Math.max 0,
@@ -32,6 +33,8 @@ Resource = (name) ->
       resource._name = arguments[0]
       resource
 
+  validateWith: (v) -> validator = v
+
   pluralName: ->
     if arguments.length is 0
       if resource._pluralName
@@ -50,6 +53,10 @@ Resource = (name) ->
     resource
 
   create: (record) ->
+    if validator
+      result = validator(record)
+      return { _errors: result } if result != true
+
     record[idAttribute] = idFactory()
     records = records.concat [record]
     record

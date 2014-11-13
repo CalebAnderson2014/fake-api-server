@@ -16,13 +16,16 @@ Server = ->
       sendResponse = (resource) ->
         try
           res.send cb(req, resource)
-        catch errorMsg
-          res.statusCode = 404
-          res.send errorMsg
+        catch error
+          res.statusCode = error.code
+          res.send error.message
 
       for resource in resources
         sendResponse(resource) if resource.pluralName() is path
       res.send 404
+
+  fail = (message, code=404) ->
+    throw { message, code }
 
   server.on "error", (err) ->
     console.error err
@@ -36,16 +39,19 @@ Server = ->
     resource.all()
 
   server.get "/api/:resource/:id", getResource (req, resource) ->
-    resource.find(req.params.id) || throw "No #{resource.name()} with id #{req.params.id}"
+    resource.find(req.params.id) || fail ["No #{resource.name()} with id #{req.params.id}"]
 
   server.post "/api/:resource", getResource (req, resource) ->
-    resource.create(req.body)
+    result = resource.create(req.body)
+    fail(result._errors, 400) if result._errors
+    result
+
 
   server.put "/api/:resource/:id", getResource (req, resource) ->
-    resource.update(req.params.id, req.body) || throw "No #{resource.name()} with id #{req.params.id}"
+    resource.update(req.params.id, req.body) || fail "No #{resource.name()} with id #{req.params.id}"
 
   server.delete "/api/:resource/:id", getResource (req, resource) ->
-    resource.remove(req.params.id) || throw "No #{resource.name()} with id #{req.params.id}"
+    resource.remove(req.params.id) || fail "No #{resource.name()} with id #{req.params.id}"
 
   #
   # Public Interface
