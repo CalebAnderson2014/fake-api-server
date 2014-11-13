@@ -34,7 +34,7 @@ Resource = (name) ->
       resource._name = arguments[0]
       resource
 
-  validateWith: (v) -> validator = v
+  validateWith: (v) -> validator = v; this
   addFunnel: (f) -> funnels.push(f); this
 
   pluralName: ->
