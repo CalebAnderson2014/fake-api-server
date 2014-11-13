@@ -7,6 +7,11 @@ describe "resource", ->
   beforeEach ->
     books = new fake.Resource "book"
 
+  it "can add an array of resources", (done) ->
+    books.add [{x:1}, {x:2}]
+    expect(books.all().length).to.equal 2
+    done()
+
   it "can set a validator", (done) ->
     validator = (obj) ->
       obj.x == 12 || { x: "Expected to be 12" }

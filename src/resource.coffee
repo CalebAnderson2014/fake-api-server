@@ -50,8 +50,11 @@ Resource = (name) ->
   all: ->
     records
 
-  add: (record) ->
-    resource.create(record)
+  add: (records) ->
+    if records.constructor == Array
+      resource.create(rec) for rec in records
+    else
+      resource.create(records)
     resource
 
   create: (record) ->
