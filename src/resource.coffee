@@ -62,7 +62,7 @@ Resource = (name) ->
 
     if validator
       result = validator(record)
-      return { _errors: result } if result != true
+      return { _errors: result } if result?
 
     record[idAttribute] = idFactory()
     records = records.concat [record]

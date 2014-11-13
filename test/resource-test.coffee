@@ -14,7 +14,7 @@ describe "resource", ->
 
   it "can set a validator", (done) ->
     validator = (obj) ->
-      obj.x == 12 || { x: "Expected to be 12" }
+      { x: "Expected to be 12" } if obj.x != 12
 
     books.validateWith(validator)
 
