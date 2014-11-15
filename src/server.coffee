@@ -54,17 +54,12 @@ Server = ->
     resource.remove(req.params.id) || fail "No #{resource.name()} with id #{req.params.id}"
 
   #
-  # Public Interface
+  # Fake-specific API
   #
-  listen = (port=3000) ->
-    server.listen port
-    console.log "server listening on localhost:#{port}"
-    this
-
-  register = (resource) ->
+  server.register = (resource) ->
     resources = resources.concat [resource]
     this
 
-  return { listen, register }
+  return server
 
 module.exports = Server
