@@ -30,27 +30,27 @@ Server = ->
   server.on "error", (err) ->
     console.error err
 
-  server.get "/api", (req, res) ->
+  server.get "/", (req, res) ->
     res.send resources.map (resource) ->
       name: resource.name()
-      url: "/api/#{resource.pluralName()}"
+      url: "/#{resource.pluralName()}"
 
-  server.get "/api/:resource", getResource (req, resource) ->
+  server.get "/:resource", getResource (req, resource) ->
     resource.all()
 
-  server.get "/api/:resource/:id", getResource (req, resource) ->
+  server.get "/:resource/:id", getResource (req, resource) ->
     resource.find(req.params.id) || fail ["No #{resource.name()} with id #{req.params.id}"]
 
-  server.post "/api/:resource", getResource (req, resource) ->
+  server.post "/:resource", getResource (req, resource) ->
     result = resource.create(req.body)
     fail(result._errors, 400) if result._errors
     result
 
 
-  server.put "/api/:resource/:id", getResource (req, resource) ->
+  server.put "/:resource/:id", getResource (req, resource) ->
     resource.update(req.params.id, req.body) || fail "No #{resource.name()} with id #{req.params.id}"
 
-  server.delete "/api/:resource/:id", getResource (req, resource) ->
+  server.delete "/:resource/:id", getResource (req, resource) ->
     resource.remove(req.params.id) || fail "No #{resource.name()} with id #{req.params.id}"
 
   #

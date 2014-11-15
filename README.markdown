@@ -42,33 +42,33 @@ fake-api-server@0.2.0 node_modules/fake-api-server
 [1] 1337
 server listening on localhost:3000
 
-> curl localhost:3000/api/books
+> curl localhost:3000/books
 [{"id":1,"name":"Lords of Finance","author":"Liaquat Ahamed
 ","year":2009},{"id":2,"name":"Public Enemies","author":"Br
 yan Burrough","year":2004}]
 
-> curl localhost:3000/api/books -X POST \
+> curl localhost:3000/books -X POST \
   -d {"name":"Low Life","author":"Luc Sante","year":1992} \
   -H "Content-Type: application/json"
 OK
 
-> curl localhost:3000/api/books/3
+> curl localhost:3000/books/3
 {"id":3,"name":"Low Life","author":"Luc Sante","year":1992}
 
-> curl localhost:3000/api/books/3 -X PUT -d {"year":1991} \
+> curl localhost:3000/books/3 -X PUT -d {"year":1991} \
   -H "Content-Type: application/json"
 OK
 
-> curl localhost:3000/api/books/3
+> curl localhost:3000/books/3
 {"id":3,"name":"Low Life","author":"Luc Sante","year":1991}
 
-> curl localhost:3000/api/books/3 -X DELETE
+> curl localhost:3000/books/3 -X DELETE
 OK
 
-> curl localhost:3000/api/books/1 -X DELETE
+> curl localhost:3000/books/1 -X DELETE
 OK
 
-> curl localhost:3000/api/books
+> curl localhost:3000/books
 [{"id":2,"name":"Public Enemies","author":"Bryan Burrough",
 "year":2004}]
 ```

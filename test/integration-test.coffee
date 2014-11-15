@@ -25,7 +25,7 @@ describe "server", ->
       .register tools
       .listen port = nextPort()
 
-    get("/api", port).then (res) ->
+    get("/", port).then (res) ->
       res.statusCode.should.equal 200
       all = JSON.parse(res.body)
 
@@ -35,14 +35,14 @@ describe "server", ->
       names.should.contain "tool"
 
       paths = all.map (d) -> d.url
-      paths.should.contain "/api/books"
-      paths.should.contain "/api/music"
-      paths.should.contain "/api/tools"
+      paths.should.contain "/books"
+      paths.should.contain "/music"
+      paths.should.contain "/tools"
 
       done()
     .end()
 
-  it "handles GET /api/books", (done) ->
+  it "handles GET /books", (done) ->
     books = new fake.Resource "book"
       .add name: "foo"
       .add name: "bar"
@@ -52,7 +52,7 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    get("/api/books", port).then (res) ->
+    get("/books", port).then (res) ->
       res.statusCode.should.equal 200
       all = JSON.parse(res.body)
 
@@ -64,16 +64,16 @@ describe "server", ->
       done()
     .end()
 
-  it "handles 404 on /api/idontexist", (done) ->
+  it "handles 404 on /idontexist", (done) ->
     port = nextPort()
     server = new fake.Server()
       .listen port
-    get("/api/idontexist", port).then (res) ->
+    get("/idontexist", port).then (res) ->
       res.statusCode.should.equal 404
       done()
     .end()
 
-  it "handles GET /api/books/:id", (done) ->
+  it "handles GET /books/:id", (done) ->
     books = new fake.Resource "book"
       .add name: "foo"
       .add bar = name: "bar"
@@ -83,7 +83,7 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    get("/api/books/#{bar.id}", port).then (res) ->
+    get("/books/#{bar.id}", port).then (res) ->
       res.statusCode.should.equal 200
 
       record = JSON.parse(res.body)
@@ -94,7 +94,7 @@ describe "server", ->
       done()
     .end()
 
-  it "handles 404 on GET /api/books/:id", (done) ->
+  it "handles 404 on GET /books/:id", (done) ->
     books = new fake.Resource "book"
       .add name: "foo"
       .add name: "bar"
@@ -104,19 +104,19 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    get("/api/books/8383", port).then (res) ->
+    get("/books/8383", port).then (res) ->
       res.statusCode.should.equal 404
       done()
     .end()
 
-  it "handles POST /api/books", (done) ->
+  it "handles POST /books", (done) ->
     books = new fake.Resource "book"
 
     server = new fake.Server()
       .register books
       .listen port = nextPort()
 
-    post('/api/books', port, name: "foobar").then (res) ->
+    post('/books', port, name: "foobar").then (res) ->
       res.statusCode.should.equal 200
 
       all = books.all()
@@ -125,14 +125,14 @@ describe "server", ->
       done()
     .end()
 
-  it "handles POST /api/books with a normal query string", (done) ->
+  it "handles POST /books with a normal query string", (done) ->
     books = new fake.Resource "book"
 
     server = new fake.Server()
       .register books
       .listen port = nextPort()
 
-    post('/api/books', port, { name: "foobar" }, { useJSON: false }).then (res) ->
+    post('/books', port, { name: "foobar" }, { useJSON: false }).then (res) ->
       res.statusCode.should.equal 200
       record = JSON.parse(res.body)
       record.name.should.not.equal undefined
@@ -144,7 +144,7 @@ describe "server", ->
       done()
     .end()
 
-  it "handles POST /api/books with an invalid resource", (done) ->
+  it "handles POST /books with an invalid resource", (done) ->
     books = new fake.Resource "book"
     # Create a validator that always throws an error
     books.validateWith -> { theAttr: "is bad" }
@@ -153,7 +153,7 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    post('/api/books', port, { name: "foobar" }).then (res) ->
+    post('/books', port, { name: "foobar" }).then (res) ->
       res.statusCode.should.equal 400
       errors = JSON.parse(res.body)
       errors.theAttr.should.equal "is bad"
@@ -162,7 +162,7 @@ describe "server", ->
 
 
 
-  it "handles PUT /api/books/:id", (done) ->
+  it "handles PUT /books/:id", (done) ->
     books = new fake.Resource "book"
       .add name: "foo"
 
@@ -170,7 +170,7 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    put("/api/books/1", port, name: "foobar").then (res) ->
+    put("/books/1", port, name: "foobar").then (res) ->
       res.statusCode.should.equal 200
       all = books.all()
       all.length.should.equal 1
@@ -178,7 +178,7 @@ describe "server", ->
       done()
     .end()
 
-  it "handles DELETE /api/books/:id", (done) ->
+  it "handles DELETE /books/:id", (done) ->
     books = new fake.Resource "book"
       .add name: "foo"
 
@@ -186,7 +186,7 @@ describe "server", ->
       .register books
       .listen port = nextPort()
 
-    del("/api/books/1", port).then (res) ->
+    del("/books/1", port).then (res) ->
       res.statusCode.should.equal 200
       all = books.all()
       all.length.should.equal 0
@@ -211,17 +211,17 @@ describe "registered resources", ->
       res
 
     manipulate = [
-      get("/api/cats/1", port)
-      post("/api/cats",  port, name: "kitty")
-      put("/api/cats/2", port, name: "garfield")
-      del("/api/cats/1", port)
+      get("/cats/1", port)
+      post("/cats",  port, name: "kitty")
+      put("/cats/2", port, name: "garfield")
+      del("/cats/1", port)
     ].map (p) -> p.then(expectOk)
 
-    get("/api/cats", port).then(expectOk).then (res) ->
+    get("/cats", port).then(expectOk).then (res) ->
       all = JSON.parse(res.body)
       all.length.should.equal 3
     .then(-> Q.all manipulate)
-    .then(-> get "/api/cats", port)
+    .then(-> get "/cats", port)
     .then(expectOk)
     .then (res) ->
       all = JSON.parse(res.body)
