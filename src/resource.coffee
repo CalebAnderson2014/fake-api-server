@@ -1,6 +1,6 @@
 # fake api resource
 
-Resource = (name) ->
+Resource = (name, pluralName) ->
   records = []
   validator = null
   funnels = []
@@ -10,8 +10,8 @@ Resource = (name) ->
       Math.max.apply Math, (d[idAttribute] for d in records)
 
   resource =
-  _name: name
-  _pluralName: null
+  name: name
+  pluralName: pluralName || "#{name}s"
 
   idAttribute: ->
     if arguments.length is 0
@@ -27,25 +27,8 @@ Resource = (name) ->
       idFactory = arguments[0]
       resource
 
-  name: ->
-    if arguments.length is 0
-      resource._name
-    else
-      resource._name = arguments[0]
-      resource
-
   validateWith: (v) -> validator = v; this
   addFunnel: (f) -> funnels.push(f); this
-
-  pluralName: ->
-    if arguments.length is 0
-      if resource._pluralName
-        resource._pluralName
-      else
-        "#{resource._name}s"
-    else
-      resource._pluralName = arguments[0]
-      resource
 
   all: ->
     records

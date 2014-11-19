@@ -31,8 +31,7 @@ describe "server", ->
 
   it "handles index requests", (done) ->
     books = new fake.Resource "book"
-    music = new fake.Resource "music"
-      .pluralName "music"
+    music = new fake.Resource "music", "music"
     tools = new fake.Resource "tool"
 
     server = new fake.Server()
@@ -211,7 +210,7 @@ describe "server", ->
 
 describe "registered resources", ->
   it "can still be renamed", (done) ->
-    books = new fake.Resource "books"
+    books = new fake.Resource "cat"
       .add name: "goodbye"
       .add name: "foo"
       .add name: "ohai"
@@ -219,8 +218,6 @@ describe "registered resources", ->
     server = new fake.Server()
       .register books
       .listen port = nextPort()
-
-    books.name "cat"
 
     expectOk = (res) ->
       res.statusCode.should.equal 200
