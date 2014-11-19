@@ -3,10 +3,11 @@
 express = require 'express'
 bodyParser = require 'body-parser'
 
-Server = ->
+Server = (options={}) ->
   resources = []
 
   server = express()
+  options.config?(server)
   server.use bodyParser()
 
   getResource = (cb) ->

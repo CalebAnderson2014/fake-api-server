@@ -13,6 +13,22 @@ _port = 6000
 nextPort = -> _port = _port + 1
 
 describe "server", ->
+
+  it "is configurable", (done) ->
+    toggle = false
+    server = new fake.Server
+      config: (server) ->
+        server.use (req, res, next) -> toggle = true; next()
+
+    server
+      .register(new fake.Resource "book")
+      .listen port = nextPort()
+
+    get('/', port).then ->
+      toggle.should.equal(true)
+      done()
+    .end()
+
   it "handles index requests", (done) ->
     books = new fake.Resource "book"
     music = new fake.Resource "music"
