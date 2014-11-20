@@ -2,7 +2,7 @@
 
 Resource = (name, pluralName) ->
   records = []
-  validator = null
+  validators = []
   funnels = []
   idAttribute = "id"
   idFactory = ->
@@ -27,7 +27,7 @@ Resource = (name, pluralName) ->
       idFactory = arguments[0]
       resource
 
-  validateWith: (v) -> validator = v; this
+  addValidator: (v) -> validators.push(v); this
   addFunnel: (f) -> funnels.push(f); this
 
   all: ->
@@ -43,8 +43,8 @@ Resource = (name, pluralName) ->
   create: (record) ->
     record = f(record) for f in funnels
 
-    if validator
-      result = validator(record)
+    for validate in validators
+      result = validate(record)
       return { _errors: result } if result?
 
     record[idAttribute] = idFactory()

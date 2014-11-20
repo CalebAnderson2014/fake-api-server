@@ -162,7 +162,7 @@ describe "server", ->
   it "handles POST /books with an invalid resource", (done) ->
     books = new fake.Resource "book"
     # Create a validator that always throws an error
-    books.validateWith -> { theAttr: "is bad" }
+    books.addValidator -> { theAttr: "is bad" }
 
     server = new fake.Server()
       .register books

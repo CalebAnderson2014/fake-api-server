@@ -16,7 +16,7 @@ describe "resource", ->
     validator = (obj) ->
       { x: "Expected to be 12" } if obj.x != 12
 
-    books.validateWith(validator)
+    books.addValidator(validator)
 
     result = books.create({ x: 12 })
     expect(result.id).to.not.equal undefined
