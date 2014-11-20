@@ -3,6 +3,7 @@
 express = require 'express'
 bodyParser = require 'body-parser'
 ResourceServer = require './resource-server'
+path = require 'path'
 
 Server = (options={}) ->
   resources = []
@@ -27,10 +28,12 @@ Server = (options={}) ->
   #
   server.register = (url, resource) ->
     # url is optional
-    resource = url if resource == undefined
+    if resource == undefined
+      resource = url
+      url = '/'
 
     resources = resources.concat [resource]
-    server.use("/#{resource.pluralName}", new ResourceServer(resource))
+    server.use(path.join(url, resource.pluralName), new ResourceServer(resource))
     this
 
   return server
