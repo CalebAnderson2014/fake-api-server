@@ -3,7 +3,7 @@
 express = require 'express'
 bodyParser = require 'body-parser'
 ResourceServer = require './resource-server'
-path = require 'path'
+pathLib = require 'path'
 
 Server = (options={}) ->
   resources = []
@@ -26,16 +26,37 @@ Server = (options={}) ->
   #
   # Fake-specific API
   #
-  server.register = (url, resource) ->
-    # url is optional
-    if resource == undefined
-      resource = url
-      url = '/'
-
+  server.register = (resource, nestedResource) ->
+    resourceServer = new ResourceServer(resource)
     resources = resources.concat [resource]
-    server.use(path.join(url, resource.pluralName), new ResourceServer(resource))
+
+    path = "/#{resource.pluralName}"
+    if nestedResource
+      nestedServer = new ResourceServer(nestedResource)
+      resources = resources.concat [nestedResource]
+
+      parentId = "#{resource.name}Id"
+      nestedServer.addFilter 'GET /', (req, record) ->
+        record[parentId] == req.params[parentId]
+      nestedResource.addValidator (record) ->
+        if not resource.find(record[parentId])
+          errors = {}
+          errors[parentId] = ["#{resource.name} with id=#{record[parentId]} does not exist"]
+          return errors
+        else
+          return undefined
+
+      npath = "#{path}/:#{parentId}/#{nestedResource.pluralName}"
+      server.use(npath, passParentParams)
+      server.use(npath, nestedServer)
+
+    server.use(path, resourceServer)
     this
 
   return server
+
+passParentParams = (req, res, next) ->
+  req.parentParams = req.params
+  next()
 
 module.exports = Server
