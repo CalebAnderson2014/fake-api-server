@@ -27,16 +27,14 @@ Server = (options={}) ->
   # Fake-specific API
   #
   server.register = (resource, nestedResource) ->
-    resourceServer = new ResourceServer(resource)
-    resources = resources.concat [resource]
 
     path = "/#{resource.pluralName}"
     if nestedResource
-      nestedServer = new ResourceServer(nestedResource)
       resources = resources.concat [nestedResource]
+      resourceServer = new ResourceServer(nestedResource)
 
       parentId = "#{resource.name}Id"
-      nestedServer.addFilter 'GET /', (req, record) ->
+      resourceServer.addFilter 'GET /', (req, record) ->
         record[parentId] == req.params[parentId]
       nestedResource.addValidator (record) ->
         if not resource.find(record[parentId])
@@ -48,9 +46,11 @@ Server = (options={}) ->
 
       npath = "#{path}/:#{parentId}/#{nestedResource.pluralName}"
       server.use(npath, passParentParams)
-      server.use(npath, nestedServer)
-
-    server.use(path, resourceServer)
+      server.use(npath, resourceServer)
+    else
+      resources = resources.concat [resource]
+      resourceServer = new ResourceServer(resource)
+      server.use(path, resourceServer)
     this
 
   return server

@@ -62,6 +62,7 @@ describe "server", ->
     author = new fake.Resource "author"
 
     server = new fake.Server()
+      .register(book)
       .register(book, author)
       .listen port = nextPort()
 
