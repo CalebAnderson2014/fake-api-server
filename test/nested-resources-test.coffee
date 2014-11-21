@@ -15,43 +15,6 @@ expectOk = (res) ->
 
 
 describe "server", ->
-
-  # it "handles a plain url", (done) ->
-  #   books = new fake.Resource "book"
-  #     .add({ title: 'go' })
-
-  #   server = new fake.Server()
-  #     .register('/library', books)
-  #     .listen port = nextPort()
-
-  #   get('/library/books', port).then (res) ->
-  #     all = JSON.parse(res.body)
-  #     expect(all[0].id).to.not.equal undefined
-  #     expect(all[0].title).to.equal 'go'
-  #     done()
-  #   .end()
-
-  # it "handles named parameters", (done) ->
-  #   books = new fake.Resource "book"
-
-  #   server = new fake.Server()
-  #     .register('/library/:libraryId', books)
-  #     .listen port = nextPort()
-
-  #   bookData = { title: 'hello' }
-  #   post('/library/4/books', port, bookData).then(expectOk).then (res) ->
-  #     record = JSON.parse(res.body)
-  #     expect(record.id).to.not.equal undefined
-  #     expect(record.title).to.equal 'hello'
-  #     expect(record.libraryId).to.not.equal undefined
-  #   .then -> get('/library/4/books', port)
-  #   .then(expectOk)
-  #   .then (res) ->
-  #     records = JSON.parse(res.body)
-  #     expect(records.length).to.equal 1
-  #     done()
-  #   .end()
-
   book = null
   author = null
   server = null
