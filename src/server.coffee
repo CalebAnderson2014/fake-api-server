@@ -6,7 +6,7 @@ ResourceServer = require './resource-server'
 pathLib = require 'path'
 
 Server = (options={}) ->
-  resources = []
+  registeredResources = []
 
   server = express()
   options.config?(server)
@@ -19,9 +19,9 @@ Server = (options={}) ->
     console.error err
 
   server.get "/", (req, res) ->
-    res.send resources.map (resource) ->
-      name: resource.name
-      url: "/#{resource.pluralName}"
+    res.send registeredResources.map (register) ->
+      name: register.resource.name
+      url: register.path
 
   #
   # Fake-specific API
@@ -30,7 +30,6 @@ Server = (options={}) ->
 
     path = "/#{resource.pluralName}"
     if nestedResource
-      resources = resources.concat [nestedResource]
       resourceServer = new ResourceServer(nestedResource)
 
       parentId = "#{resource.name}Id"
@@ -47,10 +46,11 @@ Server = (options={}) ->
       npath = "#{path}/:#{parentId}/#{nestedResource.pluralName}"
       server.use(npath, passParentParams)
       server.use(npath, resourceServer)
+      registeredResources.push({ path: npath, resource: nestedResource })
     else
-      resources = resources.concat [resource]
       resourceServer = new ResourceServer(resource)
       server.use(path, resourceServer)
+      registeredResources.push({ path, resource })
     this
 
   return server
