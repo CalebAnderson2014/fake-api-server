@@ -84,7 +84,7 @@ describe "server", ->
     .then (res) ->
       author = JSON.parse(res.body)
       expect(author.id).to.not.equal undefined
-      expect(author.bookId).to.equal "#{bookId}" # WHY
+      expect(author.bookId).to.equal bookId
       expect(author.name).to.equal 'Alice'
       return author.id
     .then (id) ->
@@ -94,7 +94,7 @@ describe "server", ->
     .then (res) ->
       author = JSON.parse(res.body)
       expect(author.id).to.equal authorId
-      expect(author.bookId).to.equal "#{bookId}" # WHY
+      expect(author.bookId).to.equal bookId
       expect(author.name).to.equal 'Alice'
       done()
     .end()

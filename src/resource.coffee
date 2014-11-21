@@ -52,11 +52,13 @@ Resource = (name, pluralName) ->
     record
 
   find: (id) ->
+    id = parseInt(id)
     record = records.filter (d) ->
       "#{d[idAttribute]}" is "#{id}"
     if record.length then record[0] else no
 
   update: (id, updates) ->
+    id = parseInt(id)
     record = @find id
     return no unless record
 
@@ -67,6 +69,7 @@ Resource = (name, pluralName) ->
     record
 
   remove: (id) ->
+    id = parseInt(id)
     record = @find id
     return no unless record
     records = records.filter (d) ->

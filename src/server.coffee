@@ -57,6 +57,8 @@ Server = (options={}) ->
 
 passParentParams = (req, res, next) ->
   req.parentParams = req.params
+  for param, val of req.parentParams
+    req.parentParams[param] = parseInt(val) if param.match /Id$/
   next()
 
 module.exports = Server
