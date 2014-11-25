@@ -9,6 +9,10 @@ Resource = (name, pluralName) ->
     1 + Math.max 0,
       Math.max.apply Math, (d[idAttribute] for d in records)
 
+  updateInPlace = (record) ->
+    for r, i in records
+      records[i] = record if r.id == record.id
+
   resource =
   name: name
   pluralName: pluralName || "#{name}s"
@@ -65,7 +69,10 @@ Resource = (name, pluralName) ->
     for name, value of updates when name isnt idAttribute
       record[name] = value
 
-    record = f(record) for f in funnels
+    if funnels.length
+      record = f(record) for f in funnels
+      updateInPlace(record)
+
     record
 
   remove: (id) ->

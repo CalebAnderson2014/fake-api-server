@@ -44,6 +44,19 @@ describe "resource", ->
 
     done()
 
+  it "runs funnels on updates", (done) ->
+    book = books.create({ some: 'thing' })
+    expect(book.touched).to.equal undefined
+
+    books.addFunnel (obj) -> obj.touched = true; obj
+
+    updated = books.update(book.id, { some: 'thing else' })
+    expect(updated.touched).to.equal true
+
+    book = books.find(book.id)
+    expect(book.touched).to.equal true
+    done()
+
   it "can add multiple funnels", (done) ->
     books.addFunnel (obj) -> obj.x = 11; obj
     books.addFunnel (obj) -> obj.y = 22; obj
