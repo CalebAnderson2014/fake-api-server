@@ -38,10 +38,10 @@ Resource = (name, pluralName) ->
     records
 
   add: (records) ->
-    if records.constructor == Array
-      resource.create(rec) for rec in records
-    else
-      resource.create(records)
+    records = [records] unless records.constructor == Array
+    for rec in records
+      result = resource.create(rec)
+      throw new Error("Invalid record: " + JSON.stringify(result)) if result._errors
     resource
 
   create: (record) ->

@@ -26,6 +26,16 @@ describe "resource", ->
     expect(result._errors.x).to.equal "Expected to be 12"
     done()
 
+  it "throws an error when adding an invalid record", (done) ->
+    validator = (ob_) -> { _errors: 'bad stuff' }
+    books.addValidator(validator)
+    try
+      books.add({})
+    catch error
+      expect(error.message).to.match(/invalid/i)
+      done()
+
+
   it "can add funnels", (done) ->
 
     books.addFunnel (obj) -> obj.x = 8; obj
