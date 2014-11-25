@@ -51,7 +51,7 @@ Resource = (name, pluralName) ->
       result = validate(record)
       return { _errors: result } if result?
 
-    record[idAttribute] = idFactory()
+    record[idAttribute] ||= idFactory()
     records = records.concat [record]
     record
 
