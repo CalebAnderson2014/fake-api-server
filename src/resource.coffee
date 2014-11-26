@@ -40,18 +40,18 @@ Resource = (name, pluralName) ->
   add: (records) ->
     records = [records] unless records.constructor == Array
     for rec in records
-      result = resource.create(rec)
+      result = resource.create(rec, rec.id)
       throw new Error("Invalid record: " + JSON.stringify(result)) if result._errors
     resource
 
-  create: (record) ->
+  create: (record, id) ->
     record = f(record) for f in funnels
 
     for validate in validators
       result = validate(record)
       return { _errors: result } if result?
 
-    record[idAttribute] ||= idFactory()
+    record[idAttribute] = id || idFactory()
     records = records.concat [record]
     record
 
