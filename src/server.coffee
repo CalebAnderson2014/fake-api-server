@@ -7,7 +7,6 @@ pathLib = require 'path'
 
 Server = (options={}) ->
   registered = []
-  resources = {}
 
   server = express()
   options.config?(server)
@@ -16,9 +15,11 @@ Server = (options={}) ->
   fail = (message, code=404) ->
     throw { message, code }
 
+  server.resources = {}
+
   # Allow endpoints to access all server resources
   server.use (req, res, next) ->
-    req.serverResources = resources
+    req.serverResources = server.resources
     next()
 
   server.on "error", (err) ->
@@ -32,6 +33,8 @@ Server = (options={}) ->
   #
   # Fake-specific API
   #
+  server.enableUserAccounts = enableUserAccounts.bind(null, server)
+
   server.register = (resource, nestedResource) ->
 
     path = "/#{resource.pluralName}"
@@ -58,7 +61,7 @@ Server = (options={}) ->
       server.use(path, resourceServer)
       registered.push({ path, resource })
 
-    resources[resource.pluralName] = resource
+    server.resources[resource.pluralName] = resource
     this
 
   return server
@@ -70,3 +73,72 @@ passParentParams = (req, res, next) ->
   next()
 
 module.exports = Server
+
+
+enableUserAccounts = (server) ->
+  server.skipAuthPaths = ['GET /', 'POST /signup', 'POST /signin']
+
+  users = server.resources._users = []
+  sessions = server.resources._sessions = {}
+  findUserByUsername = (username) -> find(users, (user) -> user.username == username)
+
+  server.post '/signup', (req, res) ->
+    existingUser = findUserByUsername(req.body.username)
+    return res.status(400).send('username_taken') if existingUser
+
+    id = 1 + Object.keys(users).length
+    users.push({
+      id: id,
+      username: req.body.username,
+      password: req.body.password
+    })
+    res.status(200).json({ status: 'success' })
+
+
+  server.post '/signin', (req, res) ->
+    user = findUserByUsername(req.body.username)
+    return res.status(400).send('username_does_not_exist') if !user
+    return res.status(400).send('incorrect_password') if user.password != req.body.password
+
+    tokenId = uuid()
+    sessions[tokenId] = user.id
+    res.json({ apiToken: tokenId })
+
+
+  server.use (req, res, next) ->
+    return next() if server.skipAuthPaths.indexOf("#{req.method.toUpperCase()} #{req.path}") >= 0
+
+    sessionId = tokenFromHeader(req) || req.params.apiToken || tokenFromBody(req)
+    return res.status(401).end() unless sessionId
+
+    userId = sessions[sessionId]
+    return res.status(401).end() unless userId?
+
+    req.user = find users, (u) -> u.id == userId
+    return res.status(401).end() unless req.user?
+    next()
+
+  return server
+
+tokenFromHeader = (req) ->
+  header = req.get('Authorization')
+  return unless header
+  match = header.match(/^API token="([^"]+)"$/)
+  match && match[1]
+
+tokenFromBody = (req) ->
+  return null unless req.body?
+  token = req.body.apiToken
+  delete req.body.apiToken
+  token
+
+find = (array, pred) ->
+  for elem in array
+    return elem if pred(elem)
+  return null
+
+uuid = ->
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace /[xy]/g, (c) ->
+    r = Math.random() * 16|0
+    v = if c == 'x' then r else (r&0x3|0x8)
+    return v.toString(16)
