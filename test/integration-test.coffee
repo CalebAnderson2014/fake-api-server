@@ -240,9 +240,7 @@ describe "registered resources", ->
     chats = new fake.Resource "chat"
       .add { id: 10, text: 'hi', votes: 1 }
       .addMemberAction 'test', (chat, params, resources) ->
-        console.log("go for it")
         resources.users.all().length.should.equal 2
-        console.log("yes", resources.users.all())
 
     server = new fake.Server()
       .register chats

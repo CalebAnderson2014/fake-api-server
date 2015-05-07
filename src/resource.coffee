@@ -46,11 +46,11 @@ Resource = (name, pluralName) ->
       throw new Error("Invalid record: " + JSON.stringify(result)) if result._errors
     resource
 
-  create: (record, id) ->
-    record = f(record) for f in funnels
+  create: (record, id, resources) ->
+    record = f(record, resources) for f in funnels
 
     for validate in validators
-      result = validate(record)
+      result = validate(record, resources)
       return { _errors: result } if result?
 
     record[idAttribute] = id || idFactory()
@@ -63,7 +63,7 @@ Resource = (name, pluralName) ->
       "#{d[idAttribute]}" is "#{id}"
     if record.length then record[0] else no
 
-  update: (id, updates) ->
+  update: (id, updates, resources) ->
     id = parseInt(id)
     record = @find id
     return no unless record
@@ -72,7 +72,7 @@ Resource = (name, pluralName) ->
       record[name] = value
 
     if funnels.length
-      record = f(record) for f in funnels
+      record = f(record, resources) for f in funnels
       updateInPlace(record)
 
     record

@@ -13,16 +13,17 @@ describe "resource", ->
     done()
 
   it "can set a validator", (done) ->
-    validator = (obj) ->
+    validator = (obj, resources) ->
+      expect(resources.users.all().length).to.equal 2
       { x: "Expected to be 12" } if obj.x != 12
 
     books.addValidator(validator)
 
-    result = books.create({ x: 12 })
+    result = books.create({ x: 12 }, null, mockResources())
     expect(result.id).to.not.equal undefined
     expect(result.x).to.equal 12
 
-    result = books.create({ x: 18 })
+    result = books.create({ x: 18 }, null, mockResources())
     expect(result._errors.x).to.equal "Expected to be 12"
     done()
 
@@ -45,16 +46,19 @@ describe "resource", ->
 
   it "can add funnels", (done) ->
 
-    books.addFunnel (obj) -> obj.x = 8; obj
+    books.addFunnel (obj, resources) ->
+      expect(resources.users.all().length).to.equal 2
+      obj.x = 8
+      obj
 
-    result = books.create({ some: 'thing' })
+    result = books.create({ some: 'thing' }, null, mockResources())
     expect(result.id).to.not.equal undefined
     expect(result.some).to.equal 'thing'
     expect(result.x).to.equal 8
 
     books.addFunnel () -> { objectGot: "overriden" }
 
-    result = books.create({ one: 'more' })
+    result = books.create({ one: 'more' }, null, mockResources())
     expect(result.id).to.not.equal undefined
     expect(result.some).to.equal undefined
     expect(result.objectGot).to.equal "overriden"
@@ -65,9 +69,12 @@ describe "resource", ->
     book = books.create({ some: 'thing' })
     expect(book.touched).to.equal undefined
 
-    books.addFunnel (obj) -> obj.touched = true; obj
+    books.addFunnel (obj, resources) ->
+      expect(resources.users.all().length).to.equal 2
+      obj.touched = true
+      obj
 
-    updated = books.update(book.id, { some: 'thing else' })
+    updated = books.update(book.id, { some: 'thing else' }, mockResources())
     expect(updated.touched).to.equal true
 
     book = books.find(book.id)
@@ -95,3 +102,13 @@ describe "resource", ->
     expect(result.x).to.equal undefined
     expect(result.y).to.equal 77
     done()
+
+mockResources = ->
+  {
+    users: {
+      all: -> [
+        { id: 11, name: 'alice' },
+        { id: 22, name: 'bob' }
+      ]
+    }
+  }
