@@ -8,7 +8,7 @@ pathLib = require 'path'
 Server = (options={}) ->
   registered = []
 
-  server = express()
+  server = enableCORS(express())
   options.config?(server)
   server.use bodyParser()
 
@@ -74,6 +74,14 @@ passParentParams = (req, res, next) ->
 
 module.exports = Server
 
+
+enableCORS = (server) ->
+  server.use (req, res, next) ->
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+    next()
+  return server
 
 enableUserAccounts = (server) ->
   server.skipAuthPaths = ['GET /', 'POST /signup', 'POST /signin']
