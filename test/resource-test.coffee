@@ -35,6 +35,13 @@ describe "resource", ->
       expect(error.message).to.match(/invalid/i)
       done()
 
+  it "can add member actions", (done) ->
+    books.add { id: 11 }
+    books.addMemberAction 'finish', (book, params) ->
+      expect(book.id).to.equal 11
+      expect(params.x).to.equal 99
+      done()
+    books.runAction('finish', 11, { x: 99 })
 
   it "can add funnels", (done) ->
 

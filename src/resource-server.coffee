@@ -52,6 +52,11 @@ ResourceServer = (resource) ->
   respondTo 'DELETE /:id', (req) ->
     resource.remove(req.params.id) || fail "No #{resource.name} with id #{req.params.id}"
 
+  for actionName of resource.memberActions
+    respondTo "POST /:id/#{actionName}", (req) ->
+      id = req.params.id
+      resource.runAction(actionName, id, req.body, req.serverResources) || fail "No #{resource.name} with id #{id}"
+
   return server
 
 module.exports = ResourceServer

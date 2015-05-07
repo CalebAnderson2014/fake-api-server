@@ -6,7 +6,8 @@ ResourceServer = require './resource-server'
 pathLib = require 'path'
 
 Server = (options={}) ->
-  registeredResources = []
+  registered = []
+  resources = {}
 
   server = express()
   options.config?(server)
@@ -15,11 +16,16 @@ Server = (options={}) ->
   fail = (message, code=404) ->
     throw { message, code }
 
+  # Allow endpoints to access all server resources
+  server.use (req, res, next) ->
+    req.serverResources = resources
+    next()
+
   server.on "error", (err) ->
     console.error err
 
   server.get "/", (req, res) ->
-    res.send registeredResources.map (register) ->
+    res.send registered.map (register) ->
       name: register.resource.name
       url: register.path
 
@@ -46,11 +52,13 @@ Server = (options={}) ->
       npath = "#{path}/:#{parentId}/#{nestedResource.pluralName}"
       server.use(npath, passParentParams)
       server.use(npath, resourceServer)
-      registeredResources.push({ path: npath, resource: nestedResource })
+      registered.push({ path: npath, resource: nestedResource })
     else
       resourceServer = new ResourceServer(resource)
       server.use(path, resourceServer)
-      registeredResources.push({ path, resource })
+      registered.push({ path, resource })
+
+    resources[resource.pluralName] = resource
     this
 
   return server

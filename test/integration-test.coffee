@@ -11,6 +11,7 @@ http = require 'http'
 
 _port = 6000
 nextPort = -> _port = _port + 1
+expectOk = (res) -> res.statusCode.should.equal 200; res
 
 describe "server", ->
 
@@ -209,6 +210,50 @@ describe "server", ->
     .end()
 
 describe "registered resources", ->
+
+  it "can register custom actions", (done) ->
+    chats = new fake.Resource "chat"
+      .add { id: 20, text: 'hi', votes: 1 }
+      .addMemberAction 'upvote', (chat, params) ->
+        chat.votes += params.upvoteAmount
+
+    server = new fake.Server()
+      .register chats
+      .listen port = nextPort()
+
+    post("/chats/20/upvote", port, upvoteAmount: 99)
+    .then(expectOk)
+    .then(-> get "/chats/20", port)
+    .then(expectOk)
+    .then (res) ->
+      chat = JSON.parse(res.body)
+      chat.text.should.equal 'hi'
+      chat.votes.should.equal 100
+      done()
+    .end()
+
+  it "gives custom actions access to all resources", (done) ->
+    users = new fake.Resource "user"
+      .add { id: 33, name: 'alice' }
+      .add { id: 44, name: 'bob' }
+
+    chats = new fake.Resource "chat"
+      .add { id: 10, text: 'hi', votes: 1 }
+      .addMemberAction 'test', (chat, params, resources) ->
+        console.log("go for it")
+        resources.users.all().length.should.equal 2
+        console.log("yes", resources.users.all())
+
+    server = new fake.Server()
+      .register chats
+      .register users
+      .listen port = nextPort()
+
+    post("/chats/10/test", port, upvoteAmount: 99)
+    .then(expectOk)
+    .then -> done()
+    .end()
+
   it "can still be renamed", (done) ->
     books = new fake.Resource "cat"
       .add name: "goodbye"
@@ -218,10 +263,6 @@ describe "registered resources", ->
     server = new fake.Server()
       .register books
       .listen port = nextPort()
-
-    expectOk = (res) ->
-      res.statusCode.should.equal 200
-      res
 
     manipulate = [
       get("/cats/1", port)

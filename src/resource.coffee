@@ -16,6 +16,7 @@ Resource = (name, pluralName) ->
   resource =
   name: name
   pluralName: pluralName || "#{name}s"
+  memberActions: {}
 
   idAttribute: ->
     if arguments.length is 0
@@ -33,6 +34,7 @@ Resource = (name, pluralName) ->
 
   addValidator: (v) -> validators.push(v); this
   addFunnel: (f) -> funnels.push(f); this
+  addMemberAction: (name, f) -> resource.memberActions[name] = f; this
 
   all: ->
     records
@@ -73,6 +75,12 @@ Resource = (name, pluralName) ->
       record = f(record) for f in funnels
       updateInPlace(record)
 
+    record
+
+  runAction: (name, id, params, resources) ->
+    record = @find id
+    return no unless record
+    resource.memberActions[name](record, params, resources)
     record
 
   remove: (id) ->
