@@ -27,8 +27,15 @@ Server = (options={}) ->
 
   server.get "/", (req, res) ->
     res.send registered.map (register) ->
-      name: register.resource.name
-      url: register.path
+      info =
+        name: register.resource.name
+        url: register.path
+
+      memActions = register.resource.memberActions
+      if memActions
+        info.extra = Object.keys(memActions).map (actionName) ->
+          "POST #{info.url}/:#{info.name}Id/#{actionName}"
+      info
 
   #
   # Fake-specific API

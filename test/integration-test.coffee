@@ -212,6 +212,22 @@ describe "server", ->
 describe "registered resources", ->
 
   it "can register custom actions", (done) ->
+    pets = new fake.Resource "pet"
+      .addMemberAction 'adopt', (chat, params) -> null
+
+    server = new fake.Server()
+      .register pets
+      .listen port = nextPort()
+
+    get('/', port).then (res) ->
+      expectOk(res)
+      json = JSON.parse(res.body)
+      json[0].extra.length.should.equal 1
+      json[0].extra[0].should.equal "POST /pets/:petId/adopt"
+      done()
+    .end()
+
+  it "handles custom actions", (done) ->
     chats = new fake.Resource "chat"
       .add { id: 20, text: 'hi', votes: 1 }
       .addMemberAction 'upvote', (chat, params) ->
