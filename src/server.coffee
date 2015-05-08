@@ -102,7 +102,7 @@ enableUserAccounts = (server) ->
 
   server.post '/signup', (req, res) ->
     existingUser = findUserByUsername(req.body.username)
-    return res.status(400).send('username_taken') if existingUser
+    return res.status(400).send(error: 'username_taken') if existingUser
 
     id = 1 + Object.keys(users).length
     users.push({
@@ -110,36 +110,37 @@ enableUserAccounts = (server) ->
       username: req.body.username,
       password: req.body.password
     })
-    res.status(200).json({ status: 'success' })
+    res.status(200).send({ status: 'success' })
 
 
   server.post '/signin', (req, res) ->
     user = findUserByUsername(req.body.username)
-    return res.status(400).send('username_does_not_exist') if !user
-    return res.status(400).send('incorrect_password') if user.password != req.body.password
+    return res.status(400).send(error: 'username_does_not_exist') if !user
+    return res.status(400).send(error: 'incorrect_password') if user.password != req.body.password
 
     tokenId = uuid()
     sessions[tokenId] = user.id
-    res.json({ user: { id: user.id, username: user.username }, apiToken: tokenId })
+    res.send({ user: { id: user.id, username: user.username }, apiToken: tokenId })
 
 
   server.get '/users/:id', (req, res) ->
     user = find users, (u) -> u.id == parseInt(req.params.id)
-    return res.status(404).send('user_not_found') if !user
+    return res.status(404).send(error: 'user_not_found') if !user
     res.send(user)
 
 
   server.use (req, res, next) ->
+    return next() if req.method == 'OPTIONS'
     return next() if matchPath(server.skipAuthPaths, req.method.toUpperCase(), req.path)
 
     sessionId = tokenFromHeader(req) || req.param('apiToken') || tokenFromBody(req)
-    return res.status(401).end() unless sessionId
+    return res.status(401).send(error: 'not_authorized') unless sessionId
 
     userId = sessions[sessionId]
-    return res.status(401).end() unless userId?
+    return res.status(401).send(error: 'not_authorized') unless userId?
 
     req.user = find users, (u) -> u.id == userId
-    return res.status(401).end() unless req.user?
+    return res.status(401).send(error: 'not_authorized') unless req.user?
     next()
 
   return server
