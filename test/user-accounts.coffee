@@ -55,6 +55,15 @@ describe "user accounts", ->
         done()
       .end()
 
+    it "allows access to custom endpoints (regex)", (done) ->
+      server.resources.books.add({ name: 'existing' })
+      server.skipAuthPaths.push('GET /books/[0-9]+')
+      get('/books/1', port).then (res) ->
+        expectOk(res)
+        expect(JSON.parse(res.body).id).to.equal 1
+        done()
+      .end()
+
     it "blocks access to creating resources", (done) ->
       post('/books', port, name: 'nope').then (res) ->
         expectUnauthorized(res)

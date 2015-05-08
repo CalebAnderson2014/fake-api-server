@@ -121,7 +121,7 @@ enableUserAccounts = (server) ->
 
 
   server.use (req, res, next) ->
-    return next() if server.skipAuthPaths.indexOf("#{req.method.toUpperCase()} #{req.path}") >= 0
+    return next() if matchPath(server.skipAuthPaths, req.method.toUpperCase(), req.path)
 
     sessionId = tokenFromHeader(req) || req.params.apiToken || tokenFromBody(req)
     return res.status(401).end() unless sessionId
@@ -150,6 +150,12 @@ tokenFromBody = (req) ->
 find = (array, pred) ->
   for elem in array
     return elem if pred(elem)
+  return null
+
+matchPath = (patterns, method, path) ->
+  for p in patterns
+    [meth, regex] = p.split(' ')
+    return p if meth == method && path.match('^' + regex + '$')
   return null
 
 uuid = ->
