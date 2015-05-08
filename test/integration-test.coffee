@@ -213,7 +213,7 @@ describe "registered resources", ->
 
   it "can register custom actions", (done) ->
     pets = new fake.Resource "pet"
-      .addMemberAction 'adopt', (chat, params) -> null
+      .addMemberAction 'adopt', () -> null
 
     server = new fake.Server()
       .register pets
@@ -230,8 +230,8 @@ describe "registered resources", ->
   it "handles custom actions", (done) ->
     chats = new fake.Resource "chat"
       .add { id: 20, text: 'hi', votes: 1 }
-      .addMemberAction 'upvote', (chat, params) ->
-        chat.votes += params.upvoteAmount
+      .addMemberAction 'upvote', (chat, context) ->
+        chat.votes += context.params.upvoteAmount
 
     server = new fake.Server()
       .register chats
@@ -255,8 +255,8 @@ describe "registered resources", ->
 
     chats = new fake.Resource "chat"
       .add { id: 10, text: 'hi', votes: 1 }
-      .addMemberAction 'test', (chat, params, resources) ->
-        resources.users.all().length.should.equal 2
+      .addMemberAction 'test', (chat, context) ->
+        context.resources.users.all().length.should.equal 2
 
     server = new fake.Server()
       .register chats

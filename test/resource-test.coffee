@@ -44,11 +44,11 @@ describe "resource", ->
 
   it "can add member actions", (done) ->
     books.add { id: 11 }
-    books.addMemberAction 'finish', (book, params) ->
+    books.addMemberAction 'finish', (book, context) ->
       expect(book.id).to.equal 11
-      expect(params.x).to.equal 99
+      expect(context.params.x).to.equal 99
       done()
-    books.runAction('finish', 11, { x: 99 })
+    books.runAction('finish', { id: 11, params: { x: 99 } })
 
   it "can add funnels", (done) ->
 

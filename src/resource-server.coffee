@@ -55,7 +55,12 @@ ResourceServer = (resource) ->
   for actionName of resource.memberActions
     respondTo "POST /:id/#{actionName}", (req) ->
       id = req.params.id
-      resource.runAction(actionName, id, req.body, req.serverResources) || fail "No #{resource.name} with id #{id}"
+      resource.runAction(actionName, {
+        id: id,
+        params: req.body,
+        resources: req.serverResources,
+        currentUser: req.user
+      }) || fail "No #{resource.name} with id #{id}"
 
   return server
 

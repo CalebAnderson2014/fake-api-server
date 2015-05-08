@@ -81,10 +81,10 @@ Resource = (name, pluralName) ->
 
     record
 
-  runAction: (name, id, params, resources) ->
-    record = @find id
+  runAction: (name, context) ->
+    record = @find context.id
     return no unless record
-    resource.memberActions[name](record, params, resources)
+    resource.memberActions[name](record, context)
     record
 
   remove: (id) ->

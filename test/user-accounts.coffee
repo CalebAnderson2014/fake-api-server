@@ -69,6 +69,8 @@ describe "user accounts", ->
         done()
       .end()
 
+    # TODO: TEST MEMBER ACTIONS, VALIDATION, AND FUNNELS
+
 createAccount = (port, credentials) ->
   post('/signup', port, credentials)
     .then(expectOk)
