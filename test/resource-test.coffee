@@ -36,6 +36,12 @@ describe "resource", ->
       expect(error.message).to.match(/invalid/i)
       done()
 
+  it "handles uniqueness", ->
+    books.uniqueAttribute('name')
+    books.add({ name: 'x' })
+    invalid = books.create({ name: 'x' })
+    expect(invalid._errors.name).to.equal 'is taken'
+
   it "can add member actions", (done) ->
     books.add { id: 11 }
     books.addMemberAction 'finish', (book, params) ->

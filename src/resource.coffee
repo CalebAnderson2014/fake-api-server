@@ -36,6 +36,12 @@ Resource = (name, pluralName) ->
   addFunnel: (f) -> funnels.push(f); this
   addMemberAction: (name, f) -> resource.memberActions[name] = f; this
 
+  uniqueAttribute: (attr) ->
+    this.addValidator (record) ->
+      for r in records
+        return { name: 'is taken' }
+      return undefined
+
   all: ->
     records
 
