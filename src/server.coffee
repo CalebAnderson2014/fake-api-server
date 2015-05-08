@@ -120,7 +120,7 @@ enableUserAccounts = (server) ->
 
     tokenId = uuid()
     sessions[tokenId] = user.id
-    res.json({ apiToken: tokenId })
+    res.json({ user: { id: user.id, username: user.username }, apiToken: tokenId })
 
 
   server.get '/users/:id', (req, res) ->
