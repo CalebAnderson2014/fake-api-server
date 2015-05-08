@@ -65,9 +65,9 @@ Resource = (name, pluralName) ->
 
   find: (id) ->
     id = parseInt(id)
-    record = records.filter (d) ->
-      "#{d[idAttribute]}" is "#{id}"
-    if record.length then record[0] else no
+    for r in records
+      return r if r[idAttribute].toString() == id.toString()
+    return no
 
   update: (id, updates, resources) ->
     id = parseInt(id)
