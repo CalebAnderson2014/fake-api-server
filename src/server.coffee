@@ -26,16 +26,19 @@ Server = (options={}) ->
     console.error err
 
   server.get "/", (req, res) ->
-    res.send registered.map (register) ->
-      info =
-        name: register.resource.name
-        url: register.path
+    endpoints = registered.map (register) ->
+      name: register.resource.name
+      url: register.path
+      extra: Object.keys(register.resource.memberActions).map (actionName) ->
+        "POST #{register.path}/:#{register.resource.name}Id/#{actionName}"
 
-      memActions = register.resource.memberActions
-      if memActions
-        info.extra = Object.keys(memActions).map (actionName) ->
-          "POST #{info.url}/:#{info.name}Id/#{actionName}"
-      info
+    if server.resources._users
+      endpoints.push({
+        name: 'user accounts',
+        extra: ['POST /signup', 'POST /signin']
+      })
+
+    res.send({ endpoints })
 
   #
   # Fake-specific API

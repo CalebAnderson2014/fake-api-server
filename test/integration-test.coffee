@@ -43,14 +43,14 @@ describe "server", ->
 
     get("/", port).then (res) ->
       res.statusCode.should.equal 200
-      all = JSON.parse(res.body)
+      endpoints = JSON.parse(res.body).endpoints
 
-      names = all.map (d) -> d.name
+      names = endpoints.map (d) -> d.name
       names.should.contain "book"
       names.should.contain "music"
       names.should.contain "tool"
 
-      paths = all.map (d) -> d.url
+      paths = endpoints.map (d) -> d.url
       paths.should.contain "/books"
       paths.should.contain "/music"
       paths.should.contain "/tools"
@@ -221,9 +221,9 @@ describe "registered resources", ->
 
     get('/', port).then (res) ->
       expectOk(res)
-      json = JSON.parse(res.body)
-      json[0].extra.length.should.equal 1
-      json[0].extra[0].should.equal "POST /pets/:petId/adopt"
+      endpoints = JSON.parse(res.body).endpoints
+      endpoints[0].extra.length.should.equal 1
+      endpoints[0].extra[0].should.equal "POST /pets/:petId/adopt"
       done()
     .end()
 
