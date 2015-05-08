@@ -11,7 +11,7 @@ ResourceServer = (resource) ->
   server = express()
   server.use bodyParser()
 
-  server.addFilter = (method_url, f) ->
+  server.addResponseFilter = (method_url, f) ->
     filters[method_url] ||= []
     filters[method_url].push f
 

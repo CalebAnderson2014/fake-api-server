@@ -42,7 +42,7 @@ Server = (options={}) ->
       resourceServer = new ResourceServer(nestedResource)
 
       parentId = "#{resource.name}Id"
-      resourceServer.addFilter 'GET /', (req, record) ->
+      resourceServer.addResponseFilter 'GET /', (req, record) ->
         record[parentId] == req.params[parentId]
       nestedResource.addValidator (record) ->
         if not resource.find(record[parentId])

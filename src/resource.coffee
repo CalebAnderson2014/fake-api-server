@@ -40,9 +40,9 @@ Resource = (name, pluralName) ->
     records
 
   add: (records) ->
-    records = [records] unless records.constructor == Array
+    records = [records] unless Array.isArray(records)
     for rec in records
-      result = resource.create(rec, rec.id)
+      result = resource.create(rec, rec[idAttribute])
       throw new Error("Invalid record: " + JSON.stringify(result)) if result._errors
     resource
 
