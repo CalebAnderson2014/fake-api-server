@@ -32,6 +32,18 @@ describe "user accounts", ->
       .then -> done()
     .end()
 
+  it "provides a GET interface to all users", (done) ->
+    server.listen port = nextPort()
+    createAccount(port, { username: 'bob', password: '123' })
+      .then (token) -> get("/users/1?apiToken=#{token}", port)
+      .then (res) ->
+        expectOk(res)
+        user = JSON.parse(res.body)
+        expect(user.id).to.equal 1
+        expect(user.username).to.equal 'bob'
+        done()
+    .end()
+
   describe "resource blocking", ->
     port = null
     apiTokenPromise = null

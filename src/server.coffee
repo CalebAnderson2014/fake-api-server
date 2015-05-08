@@ -123,10 +123,16 @@ enableUserAccounts = (server) ->
     res.json({ apiToken: tokenId })
 
 
+  server.get '/users/:id', (req, res) ->
+    user = find users, (u) -> u.id == parseInt(req.params.id)
+    return res.status(404).send('user_not_found') if !user
+    res.send(user)
+
+
   server.use (req, res, next) ->
     return next() if matchPath(server.skipAuthPaths, req.method.toUpperCase(), req.path)
 
-    sessionId = tokenFromHeader(req) || req.params.apiToken || tokenFromBody(req)
+    sessionId = tokenFromHeader(req) || req.param('apiToken') || tokenFromBody(req)
     return res.status(401).end() unless sessionId
 
     userId = sessions[sessionId]
