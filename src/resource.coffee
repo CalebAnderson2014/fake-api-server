@@ -74,12 +74,10 @@ Resource = (name, pluralName) ->
     record = @find id
     return no unless record
 
+    updates = f(updates, resources) for f in funnels
+
     for name, value of updates when name isnt idAttribute
       record[name] = value
-
-    if funnels.length
-      record = f(record, resources) for f in funnels
-      updateInPlace(record)
 
     record
 
