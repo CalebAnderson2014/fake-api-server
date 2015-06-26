@@ -171,13 +171,13 @@ matchPath = (patterns, method, path) ->
     return p if meth == method && path.match('^' + regex + '$')
   return null
 
-validateUsername = (username, findUserByUsername) ->
+validateUsername = (username='', findUserByUsername) ->
   reason = 'Username must be at least 3 characters long' if username.length < 3
   reason = 'Username must be alphanumerical (a-z 0-9)' unless username.match /^[a-z0-9]+$/i
   reason = 'Username is taken' if findUserByUsername(username)
   return { error: 'invalid_username', reason: reason } if reason?
 
-validatePassword = (password) ->
+validatePassword = (password='') ->
   reason = 'Password must be at least 1 characters long' if password.length < 1
   reason = 'Password must be alphanumerical (a-z 0-9)' unless password.match /^[a-z0-9]+$/i
   return { error: 'invalid_password', reason: reason } if reason?

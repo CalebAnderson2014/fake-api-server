@@ -32,6 +32,13 @@ describe "user accounts", ->
       .then -> done()
     .end()
 
+  it "doesn't break on empty credentials", (done) ->
+    server.listen port = nextPort()
+    post('/signup', port, {})
+      .then(expectCode 400)
+      .then -> done()
+    .end()
+
   it "provides a GET interface to all users", (done) ->
     server.listen port = nextPort()
     createAccount(port, { username: 'bob', password: '123' })
