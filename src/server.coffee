@@ -113,7 +113,9 @@ enableUserAccounts = (server) ->
       username: req.body.username,
       password: req.body.password
     })
-    res.status(200).send({ status: 'success' })
+    tokenId = uuid()
+    sessions[tokenId] = user.id
+    res.status(200).send({ status: 'success', apiToken: tokenId })
 
 
   server.post '/signin', (req, res) ->
